@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Resume Analyzer | Enterprise</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+      :root {
+        --bg-beige: #f5f5dc;
+        --paper: #ffffff;
+        --accent-red: #d60001;
+        --dark-blue: #1e293b;
+        --text-dark: #1a1a1a;
+        --border: #e0e0e0;
+      }
+
+      body {
+        background-color: var(--bg-beige);
+        color: var(--text-dark);
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+        user-select: none;
+      }
+
+      #brand-logo {
+        position: absolute;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--accent-red);
+        z-index: 100;
+        background: var(--bg-beige);
+        padding: 5px 10px;
+        pointer-events: none;
+      }
+
+      .app-container {
+        width: 90%;
+        max-width: 1000px;
+        opacity: 0;
+        margin-top: 100px;
+      }
+
+      /* Steps Section */
+      .steps-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+      }
+      .step-box {
+        flex: 1;
+        padding: 2rem;
+        background: var(--paper);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+      .step-num {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent-red);
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+      .step-text {
+        font-size: 0.9rem;
+        color: #555;
+        line-height: 1.5;
+      }
+
+      .upload-zone {
+        text-align: center;
+        padding: 2rem;
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        cursor: pointer;
+        background: var(--paper);
+      }
+
+      /* Results Grid */
+      .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+      }
+      .card {
+        background: var(--paper);
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        border-radius: 12px;
+      }
+      .span-2 {
+        grid-column: span 2;
+      }
+      .span-4 {
+        grid-column: span 4;
+      }
+      .label {
+        color: var(--accent-red);
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        margin-bottom: 0.8rem;
+      }
+
+      .gauge-wrap {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .gauge-fill {
+        fill: none;
+        stroke: var(--accent-red);
+        stroke-width: 10;
+        stroke-dasharray: 0 251.2;
+        stroke-linecap: round;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+      button {
+        background: var(--accent-red);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="brand-logo">AI RESUME ANALYZER</div>
+
+    <div class="app-container" id="app-container">
+      <div id="state-upload">
+        <div class="steps-container">
+          <div class="step-box">
+            <span class="step-num">01</span>Prepare File
+            <p class="step-text">
+              Ensure your resume is saved as a clean, text-based PDF file for
+              optimal parsing.
+            </p>
+          </div>
+          <div class="step-box">
+            <span class="step-num">02</span>Upload Document
+            <p class="step-text">
+              Use the interface below to stage your file. Our system will
+              immediately initiate a handshake.
+            </p>
+          </div>
+          <div class="step-box">
+            <span class="step-num">03</span>Receive Analysis
+            <p class="step-text">
+              Get a comprehensive breakdown of your ATS score, skill gaps, and
+              professional profile.
+            </p>
+          </div>
+        </div>
+        <div
+          class="upload-zone"
+          onclick="document.getElementById('file-upload').click()"
+        >
+          <p id="file-label">Click to select your PDF resume file</p>
+          <input
+            type="file"
+            id="file-upload"
+            class="hidden"
+            accept=".pdf"
+            onchange="updateFile(this)"
+          />
+        </div>
+        <div style="text-align: center">
+          <button id="analyze-btn" class="hidden" onclick="startScan()">
+            RUN ANALYSIS
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="state-scan"
+        class="hidden"
+        style="
+          background: var(--dark-blue);
+          color: white;
+          padding: 4rem;
+          border-radius: 12px;
+          text-align: center;
+        "
+      >
+        <h2 style="margin-bottom: 1rem">Executing Deep Scan...</h2>
+        <p id="scan-text">Initializing AI Engine...</p>
+      </div>
+
+      <div id="state-results" class="bento-grid hidden">
+        <div class="card span-2">
+          <div class="label">Candidate Profile</div>
+          <h2>Prashantha</h2>
+          <p>
+            <strong>Contact:</strong> 9986670177<br /><strong>Email:</strong>
+            prashanth.k1984@gmail.com<br /><strong>Address:</strong> Mysore,
+            570017
+          </p>
+        </div>
+        <div class="card span-2" style="text-align: center">
+          <div class="label">ATS Compliance Score</div>
+          <div class="gauge-wrap">
+            <svg class="gauge-svg">
+              <circle
+                cx="75"
+                cy="75"
+                r="40"
+                stroke="#eee"
+                stroke-width="10"
+                fill="none"
+              />
+              <circle
+                id="gauge-fill"
+                class="gauge-fill"
+                cx="75"
+                cy="75"
+                r="40"
+              />
+            </svg>
+            <div
+              id="score-text"
+              style="
+                position: absolute;
+                font-size: 2rem;
+                font-weight: 700;
+                color: var(--accent-red);
+              "
+            >
+              0%
+            </div>
+          </div>
+        </div>
+        <div class="card span-4">
+          <div class="label">Professional Experience History</div>
+          <p>
+            • <strong>Technical Assistant:</strong> Central Food Technological
+            Research Institute (CFTRI), Mysore. Responsible for the supervision,
+            planning, and maintenance of institutional civil engineering
+            works.<br />
+            • <strong>Manager - Construction:</strong> Endue Consultancy
+            Services Pvt Ltd. Focused on large-scale project coordination,
+            structural planning, and resource allocation.<br />
+            • <strong>Engineer:</strong> M/s Larsen & Toubro Limited. Managed
+            site execution, strict quality control enforcement, and safety
+            protocol implementation.
+          </p>
+        </div>
+        <div class="card span-2">
+          <div class="label">Educational Background</div>
+          <p>
+            • <strong>Bachelor of Engineering (Civil):</strong> National
+            Institute of Engineering, Currently in 6th Semester.<br />
+            • <strong>Diploma in Civil Engineering:</strong> Completed with
+            72.5% aggregate from the Board of Technical Education.
+          </p>
+        </div>
+        <div class="card span-2">
+          <div class="label">Skills & Achievements</div>
+          <p>
+            • <strong>Technical Tools:</strong> Proficient in AUTO-CADD, Rivet
+            Architecture, SAP, and MS Project.<br />
+            • <strong>Achievements:</strong> Holder of NCC "B" & "C"
+            certificates. Awarded Gold Medal in 4X400m relay event. Active
+            Instructor at Kirthi Adventure Institute.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.onload = () => {
+        gsap
+          .timeline()
+          .to("#brand-logo", {
+            duration: 1.5,
+            top: "20px",
+            left: "20px",
+            fontSize: "1.1rem",
+            ease: "power2.out",
+          })
+          .to("#app-container", { opacity: 1, duration: 0.5 });
+      };
+
+      function updateFile(input) {
+        if (input.files.length) {
+          document.getElementById("file-label").innerText =
+            "File Staged: " + input.files[0].name;
+          document.getElementById("analyze-btn").classList.remove("hidden");
+        }
+      }
+
+      function startScan() {
+        document.getElementById("state-upload").classList.add("hidden");
+        document.getElementById("state-scan").classList.remove("hidden");
+        const texts = [
+          "Extracting raw document strings...",
+          "Mapping career trajectories...",
+          "Parsing technical competency...",
+          "Validating ATS keyword density...",
+          "Finalizing analysis report...",
+        ];
+        texts.forEach((text, i) => {
+          setTimeout(() => {
+            document.getElementById("scan-text").innerText = text;
+          }, i * 1000);
+        });
+        setTimeout(() => {
+          document.getElementById("state-scan").classList.add("hidden");
+          document.getElementById("state-results").classList.remove("hidden");
+          gsap.from(".card", {
+            y: 40,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.1,
+          });
+          gsap.to("#gauge-fill", { strokeDasharray: "221 251.2", duration: 2 });
+          const obj = { val: 0 };
+          gsap.to(obj, {
+            val: 88,
+            duration: 2,
+            onUpdate: () => {
+              document.getElementById("score-text").innerText =
+                Math.floor(obj.val) + "%";
+            },
+          });
+        }, 5000);
+      }
+    </script>
+  </body>
+</html>
